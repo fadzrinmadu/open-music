@@ -28,13 +28,13 @@ class PlaylistsService {
     return result.rows[0].id;
   }
 
-  async getPlaylists(user) {
+  async getPlaylists(owner) {
     const query = {
       text: `SELECT playlists.id, playlists.name, users.username FROM playlists
       LEFT JOIN users ON users.id = playlists.owner
       LEFT JOIN collaborations ON playlists.id = collaborations.playlist_id
       WHERE playlists.owner = $1 OR collaborations.user_id = $1;`,
-      values: [user],
+      values: [owner],
     };
 
     const result = await this._pool.query(query);
@@ -67,12 +67,12 @@ class PlaylistsService {
       throw new InvariantError('Lagu gagal ditambahkan ke playlist');
     }
 
-    await this._cacheService.delete(`songs:${playlistId}`);
+    await this._cacheService.delete(`playlistsongs:${playlistId}`);
   }
 
   async getSongsFromPlaylist(playlistId) {
     try {
-      const result = await this._cacheService.get(`songs:${playlistId}`);
+      const result = await this._cacheService.get(`playlistsongs:${playlistId}`);
       return JSON.parse(result);
     } catch (error) {
       const query = {
@@ -85,7 +85,7 @@ class PlaylistsService {
 
       const result = await this._pool.query(query);
 
-      await this._cacheService.set(`songs:${playlistId}`, JSON.stringify(result.rows));
+      await this._cacheService.set(`playlistsongs:${playlistId}`, JSON.stringify(result.rows));
 
       return result.rows;
     }
@@ -103,7 +103,7 @@ class PlaylistsService {
       throw new InvariantError('Lagu gagal dihapus');
     }
 
-    await this._cacheService.delete(`songs:${playlistId}`);
+    await this._cacheService.delete(`playlistsongs:${playlistId}`);
   }
 
   async verifyPlaylistOwner(id, owner) {

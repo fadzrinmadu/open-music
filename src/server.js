@@ -47,7 +47,7 @@ require('dotenv').config();
 
 const init = async () => {
   const cacheService = new CacheService();
-  const collaborationsService = new CollaborationsService();
+  const collaborationsService = new CollaborationsService(cacheService);
   const playlistsService = new PlaylistsService(collaborationsService, cacheService);
   const songsService = new SongsService();
   const usersService = new UsersService();
